@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Stok Gudang Makanan</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="ph-fill ph-package"></i>
+                    <h2>GudangKu</h2>
+                </div>
+                <button class="sidebar-close-btn" type="button" data-sidebar-close aria-label="Tutup navigasi">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item active" id="demo-dashboard-nav">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/pages/data-stok.html" class="nav-item">
+                    <i class="ph ph-archive-box"></i>
+                    <span>Data Stok</span>
+                </a>
+                <a href="/pages/riwayat.html" class="nav-item">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>Riwayat</span>
+                </a>
+                <a href="/pages/pengaturan.html" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Monitoring Stok Makanan</h1>
+                    <p>Kelola persediaan barang dengan mudah</p>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-btn" type="button" data-sidebar-open aria-label="Buka navigasi">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar">
+                            <i class="ph ph-user"></i>
+                        </div>
+                        <span class="user-name">Admin Gudang</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Stats -->
+            <section class="stats-grid" id="demo-dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="ph ph-cube"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Barang</h3>
+                        <p class="stat-value" id="totalItems">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="ph ph-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Stok Aman</h3>
+                        <p class="stat-value" id="safeStock">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="ph ph-warning"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Stok Menipis</h3>
+                        <p class="stat-value" id="lowStock">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="ph ph-calendar-x"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Hampir Kedaluwarsa</h3>
+                        <p class="stat-value" id="expiringSoon">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stock Table Section -->
+            <section class="table-section" id="demo-dashboard-table">
+                <div class="table-header">
+                    <h2>Daftar Persediaan</h2>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="searchInput" placeholder="Cari barang...">
+                        </div>
+                        <button class="btn btn-primary" id="openAddModalBtn">
+                            <i class="ph ph-plus"></i>
+                            Tambah Barang
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="stockTable">
+                        <thead>
+                            <tr>
+                                <th>Kode</th>
+                                <th>Nama Barang</th>
+                                <th>Kategori</th>
+                                <th>Jumlah</th>
+                                <th>Satuan</th>
+                                <th>Tgl Kedaluwarsa</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be populated here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="ph ph-package"></i>
+                    <p>Tidak ada data barang.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay" id="formModal">
+        <div class="modal" id="demo-item-modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tambah Barang Baru</h2>
+                <button class="icon-btn close-modal" id="closeAddModalBtn">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+
+                    <div class="form-group" id="demo-item-form">
+                        <label for="itemCode">Kode Barang</label>
+                        <input type="text" id="itemCode" required placeholder="Contoh: BRG-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemName">Nama Barang</label>
+                        <input type="text" id="itemName" required placeholder="Masukkan nama makanan">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="itemCategory">Kategori</label>
+                            <select id="itemCategory" required>
+                                <option value="" disabled selected>Pilih Kategori</option>
+                                <option value="Bahan Pokok">Bahan Pokok</option>
+                                <option value="Sayur & Buah">Sayur & Buah</option>
+                                <option value="Daging & Ikan">Daging & Ikan</option>
+                                <option value="Bumbu Dapur">Bumbu Dapur</option>
+                                <option value="Minuman">Minuman</option>
+                                <option value="Kue & Roti">Kue & Roti</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group half">
+                            <label for="itemExpiry">Tgl Kedaluwarsa</label>
+                            <input type="date" id="itemExpiry" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="itemQuantity">Jumlah</label>
+                            <input type="number" id="itemQuantity" required min="0" placeholder="0">
+                        </div>
+
+                        <div class="form-group half">
+                            <label for="itemUnit">Satuan</label>
+                            <select id="itemUnit" required>
+                                <option value="" disabled selected>Pilih Satuan</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Gram">Gram</option>
+                                <option value="Liter">Liter</option>
+                                <option value="Pcs">Pcs</option>
+                                <option value="Karton">Karton</option>
+                                <option value="Lusin">Lusin</option>
+                                <option value="Pack">Pack</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary close-modal" id="cancelBtn">Batal</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal small">
+            <div class="modal-header">
+                <h2>Konfirmasi Hapus</h2>
+                <button class="icon-btn close-delete" id="closeDeleteBtn">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="warning-icon text-red">
+                    <i class="ph ph-warning-circle"></i>
+                </div>
+                <p>Apakah Anda yakin ingin menghapus barang <strong><span id="deleteItemName"></span></strong>?</p>
+                <p class="text-muted">Data yang dihapus tidak dapat dikembalikan.</p>
+                <input type="hidden" id="deleteItemId">
+
+                <div class="form-actions center-actions mt-lg">
+                    <button type="button" class="btn btn-secondary close-delete" id="cancelDeleteBtn">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="js/app-shell.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/demo-tour.js"></script>
+</body>
+
+</html>

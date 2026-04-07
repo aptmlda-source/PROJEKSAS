@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat - GudangKu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .page-content { padding: 32px; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); }
+        
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .history-card {
+            background: var(--bg-surface);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .history-card .icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .history-card .info h4 { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 4px; }
+        .history-card .info span { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+        
+        .filter-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-section .search-box { width: 300px; }
+        
+        .filter-section select, .filter-section input {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-surface);
+            font-size: 0.875rem;
+        }
+        
+        .filter-section input[type="date"] { min-width: 150px; }
+        
+        .clear-filter-btn {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .clear-filter-btn:hover { background: var(--bg-main); }
+        
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding: 20px;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -27px;
+            top: 24px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg-surface);
+        }
+        
+        .timeline-item.add::before { background: var(--success); }
+        .timeline-item.edit::before { background: var(--info); }
+        .timeline-item.delete::before { background: var(--danger); }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .timeline-title h3 { font-size: 1rem; font-weight: 600; color: var(--primary); }
+        
+        .timeline-badge {
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .timeline-badge.add { background: var(--success-bg); color: var(--success); }
+        .timeline-badge.edit { background: var(--info-bg); color: var(--info); }
+        .timeline-badge.delete { background: var(--danger-bg); color: var(--danger); }
+        
+        .timeline-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .timeline-details {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .timeline-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 64px;
+            color: var(--text-muted);
+        }
+        
+        .no-data i { font-size: 48px; margin-bottom: 16px; color: var(--border-color); }
+
+        @media (max-width: 960px) {
+            .page-content { padding: 20px; }
+            .history-stats { grid-template-columns: 1fr; gap: 16px; }
+            .filter-section .search-box { width: 100%; }
+        }
+
+        @media (max-width: 720px) {
+            .page-content { padding: 16px; }
+            .timeline { padding-left: 20px; }
+            .timeline::before { left: 7px; }
+            .timeline-item::before { left: -20px; }
+            .timeline-header { flex-direction: column; gap: 10px; }
+            .timeline-title { align-items: flex-start; flex-direction: column; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="ph-fill ph-package"></i>
+                    <h2>GudangKu</h2>
+                </div>
+                <button class="sidebar-close-btn" type="button" data-sidebar-close aria-label="Tutup navigasi">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="./data-stok.html" class="nav-item">
+                    <i class="ph ph-archive-box"></i>
+                    <span>Data Stok</span>
+                </a>
+                <a href="./riwayat.html" class="nav-item active">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>Riwayat</span>
+                </a>
+                <a href="./pengaturan.html" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Riwayat Aktivitas</h1>
+                    <p>Lihat semua aktivitas perubahan data</p>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-btn" type="button" data-sidebar-open aria-label="Buka navigasi">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar"><i class="ph ph-user"></i></div>
+                        <span class="user-name">Admin Gudang</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Riwayat</h1>
+                    <p>Catatan aktivitas perubahan data stok</p>
+                </div>
+
+                <div class="history-stats" id="demo-history-stats">
+                    <div class="history-card">
+                        <div class="icon" style="background: var(--success-bg); color: var(--success);">
+                            <i class="ph ph-plus-circle"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Total Tambah</h4>
+                            <span id="countAdd">0</span>
+                        </div>
+                    </div>
+                    <div class="history-card">
+                        <div class="icon" style="background: var(--info-bg); color: var(--info);">
+                            <i class="ph ph-pencil-simple"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Total Edit</h4>
+                            <span id="countEdit">0</span>
+                        </div>
+                    </div>
+                    <div class="history-card">
+                        <div class="icon" style="background: var(--danger-bg); color: var(--danger);">
+                            <i class="ph ph-trash"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Total Hapus</h4>
+                            <span id="countDelete">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-section" id="demo-history-filters">
+                    <div class="search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Cari riwayat...">
+                    </div>
+                    <select id="actionFilter">
+                        <option value="">Semua Aktivitas</option>
+                        <option value="Tambah">Tambah</option>
+                        <option value="Edit">Edit</option>
+                        <option value="Hapus">Hapus</option>
+                    </select>
+                    <input type="date" id="dateFilter">
+                    <button class="clear-filter-btn" onclick="clearFilters()">
+                        <i class="ph ph-x"></i> Clear
+                    </button>
+                </div>
+
+                <div class="table-section" id="demo-history-timeline">
+                    <div class="table-header">
+                        <h2>Log Aktivitas</h2>
+                        <button class="btn btn-secondary" onclick="clearHistory()">
+                            <i class="ph ph-trash"></i> Clear Riwayat
+                        </button>
+                    </div>
+                    
+                    <div id="historyContainer" class="timeline"></div>
+                    
+                    <div class="no-data" id="emptyState" style="display: none;">
+                        <i class="ph ph-clock-counter-clockwise"></i>
+                        <p>Belum ada riwayat aktivitas</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/app-shell.js"></script>
+    <script>
+        const KUNCI_RIWAYAT = 'GUDANG_RIWAYAT_DATA';
+        
+        const historyContainer = document.getElementById('historyContainer');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const actionFilter = document.getElementById('actionFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        
+        function getHistoryData() {
+            return JSON.parse(localStorage.getItem(KUNCI_RIWAYAT)) || [];
+        }
+        
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleDateString('id-ID', options);
+        }
+        
+        function formatRelativeTime(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Baru saja';
+            if (minutes < 60) return `${minutes} menit yang lalu`;
+            if (hours < 24) return `${hours} jam yang lalu`;
+            if (days < 7) return `${days} hari yang lalu`;
+            return formatDateTime(isoString);
+        }
+        
+        function updateStats() {
+            const riwayatData = getHistoryData();
+            const addCount = riwayatData.filter(r => r.action === 'Tambah').length;
+            const editCount = riwayatData.filter(r => r.action === 'Edit').length;
+            const deleteCount = riwayatData.filter(r => r.action === 'Hapus').length;
+            
+            document.getElementById('countAdd').innerText = addCount;
+            document.getElementById('countEdit').innerText = editCount;
+            document.getElementById('countDelete').innerText = deleteCount;
+        }
+        
+        function renderHistory() {
+            const riwayatData = getHistoryData();
+            const searchTerm = searchInput.value.toLowerCase();
+            const actionType = actionFilter.value;
+            const filterDate = dateFilter.value;
+            
+            let filtered = riwayatData.filter(entry => {
+                const matchSearch = !searchTerm || 
+                    entry.itemName.toLowerCase().includes(searchTerm) || 
+                    entry.details.toLowerCase().includes(searchTerm);
+                const matchAction = !actionType || entry.action === actionType;
+                const matchDate = !filterDate || entry.timestamp.startsWith(filterDate);
+                return matchSearch && matchAction && matchDate;
+            });
+            
+            historyContainer.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                historyContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                historyContainer.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                const actionClass = { 'Tambah': 'add', 'Edit': 'edit', 'Hapus': 'delete' };
+                
+                filtered.forEach(entry => {
+                    const item = document.createElement('div');
+                    item.className = `timeline-item ${actionClass[entry.action] || ''}`;
+                    item.innerHTML = `
+                        <div class="timeline-header">
+                            <div class="timeline-title">
+                                <h3>${entry.itemName}</h3>
+                                <span class="timeline-badge ${actionClass[entry.action] || ''}">${entry.action}</span>
+                            </div>
+                            <span class="timeline-time">${formatRelativeTime(entry.timestamp)}</span>
+                        </div>
+                        <p class="timeline-details">${entry.details}</p>
+                    `;
+                    historyContainer.appendChild(item);
+                });
+            }
+            
+            updateStats();
+        }
+        
+        window.clearFilters = () => {
+            searchInput.value = '';
+            actionFilter.value = '';
+            dateFilter.value = '';
+            renderHistory();
+        };
+        
+        window.clearHistory = () => {
+            if (confirm('Apakah Anda yakin ingin menghapus semua riwayat?')) {
+                localStorage.setItem(KUNCI_RIWAYAT, JSON.stringify([]));
+                renderHistory();
+            }
+        };
+        
+        searchInput.addEventListener('input', renderHistory);
+        actionFilter.addEventListener('change', renderHistory);
+        dateFilter.addEventListener('change', renderHistory);
+        
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                renderHistory();
+            }
+        });
+        
+        renderHistory();
+    </script>
+    <script src="../js/demo-tour.js"></script>
+</body>
+</html>

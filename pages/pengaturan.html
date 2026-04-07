@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan - GudangKu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .page-content { padding: 32px; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .settings-section {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
+        
+        .settings-section h3 {
+            font-size: 1.125rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .settings-section h3 i {
+            color: var(--accent);
+        }
+        
+        .settings-section > p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .setting-item:last-child { border-bottom: none; }
+        
+        .setting-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .setting-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--accent);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .input-number {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        
+        .btn-simpan {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .btn-simpan:hover { background-color: var(--accent-hover); }
+        
+        .danger-zone {
+            border-color: var(--danger);
+            border-width: 2px;
+        }
+        
+        .danger-zone h3 i { color: var(--danger); }
+        
+        .danger-btn {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .danger-btn:hover { background-color: #b91c1c; }
+        
+        .success-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+        }
+        
+        .success-toast.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .full-width { grid-column: span 2; }
+
+        @media (max-width: 960px) {
+            .page-content { padding: 20px; }
+            .settings-grid { grid-template-columns: 1fr; gap: 16px; }
+            .full-width { grid-column: span 1; }
+        }
+
+        @media (max-width: 720px) {
+            .page-content { padding: 16px; }
+            .settings-section { padding: 18px; }
+            .setting-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .setting-item > *:last-child { width: 100%; }
+            .input-number, .danger-btn, .btn-simpan { width: 100%; justify-content: center; }
+            .success-toast {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="ph-fill ph-package"></i>
+                    <h2>GudangKu</h2>
+                </div>
+                <button class="sidebar-close-btn" type="button" data-sidebar-close aria-label="Tutup navigasi">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="./data-stok.html" class="nav-item">
+                    <i class="ph ph-archive-box"></i>
+                    <span>Data Stok</span>
+                </a>
+                <a href="./riwayat.html" class="nav-item">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>Riwayat</span>
+                </a>
+                <a href="./pengaturan.html" class="nav-item active">
+                    <i class="ph ph-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Pengaturan</h1>
+                    <p>Kustomisasi aplikasi sesuai kebutuhan</p>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-btn" type="button" data-sidebar-open aria-label="Buka navigasi">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar"><i class="ph ph-user"></i></div>
+                        <span class="user-name">Admin Gudang</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Pengaturan</h1>
+                    <p>Atur preferensi dan konfigurasi sistem</p>
+                </div>
+
+                <div class="settings-grid" id="demo-settings-grid">
+                    <div class="settings-section">
+                        <h3><i class="ph ph-bell"></i> Notifikasi</h3>
+                        <p>Atur bagaimana sistem memberikan notifikasi</p>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Notifikasi Stok Menipis</h4>
+                                <p>Beritahu saat stok di bawah batas minimum</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifyLowStock" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Notifikasi Kedaluwarsa</h4>
+                                <p>Beritahu saat barang hampir kedaluwarsa</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifyExpiry" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Notifikasi Email</h4>
+                                <p>Kirim notifikasi melalui email</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifyEmail">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="ph ph-sliders"></i> Threshold</h3>
+                        <p>Atur batas minimum untuk notifikasi</p>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Batas Stok Menipis</h4>
+                                <p>Jumlah minimum sebelum dianggap menipis</p>
+                            </div>
+                            <input type="number" class="input-number" id="lowStockThreshold" value="10" min="1">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Hari Sebelum Kedaluwarsa</h4>
+                                <p>Notifikasi berapa hari sebelum expired</p>
+                            </div>
+                            <input type="number" class="input-number" id="expiryThreshold" value="7" min="1">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="ph ph-palette"></i> Tampilan</h3>
+                        <p>Kustomisasi tampilan aplikasi</p>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Tema</h4>
+                                <p>Pilih tema warna aplikasi</p>
+                            </div>
+                            <select id="themeSelect" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem;">
+                                <option value="light">Terang</option>
+                                <option value="dark">Gelap</option>
+                                <option value="auto">Otomatis</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Tampilan Tabel</h4>
+                                <p>Jumlah data per halaman</p>
+                            </div>
+                            <select id="itemsPerPageSelect" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.875rem;">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="ph ph-database"></i> Data</h3>
+                        <p>Kelola data aplikasi</p>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Ekspor Data</h4>
+                                <p>Unduh semua data dalam format CSV</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="exportAllData()">
+                                <i class="ph ph-download-simple"></i> Export
+                            </button>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Import Data</h4>
+                                <p>Masukkan data dari file CSV</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                                <i class="ph ph-upload-simple"></i> Import
+                            </button>
+                            <input type="file" id="importFile" accept=".csv" style="display: none;" onchange="importData(this)">
+                        </div>
+                    </div>
+
+                    <div class="settings-section full-width danger-zone">
+                        <h3><i class="ph ph-warning"></i> Zone Berbahaya</h3>
+                        <p>Hati-hati! Tindakan di bawah tidak dapat dibatalkan</p>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Hapus Semua Data Stok</h4>
+                                <p>Hapus semua data inventaris (tidak dapat dikembalikan)</p>
+                            </div>
+                            <button class="danger-btn" onclick="clearAllStockData()">
+                                <i class="ph ph-trash"></i> Hapus Data
+                            </button>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Reset Aplikasi</h4>
+                                <p>Hapus semua data dan setel ulang ke default</p>
+                            </div>
+                            <button class="danger-btn" onclick="resetApp()">
+                                <i class="ph ph-arrow-counter-clockwise"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-simpan" id="demo-settings-save" onclick="saveSettings()">
+                    <i class="ph ph-check"></i> Simpan Pengaturan
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <div class="success-toast" id="successToast">
+        <i class="ph ph-check-circle"></i>
+        <span>Pengaturan berhasil disimpan!</span>
+    </div>
+
+    <script src="../js/app-shell.js"></script>
+    <script>
+        const KUNCI_PENGATURAN = 'GUDANG_PENGATURAN';
+        
+        const defaultSettings = {
+            notifyLowStock: true,
+            notifyExpiry: true,
+            notifyEmail: false,
+            lowStockThreshold: 10,
+            expiryThreshold: 7,
+            theme: 'light',
+            itemsPerPage: 25
+        };
+        
+        function loadSettings() {
+            const saved = JSON.parse(localStorage.getItem(KUNCI_PENGATURAN));
+            const settings = saved || defaultSettings;
+            
+            document.getElementById('notifyLowStock').checked = settings.notifyLowStock;
+            document.getElementById('notifyExpiry').checked = settings.notifyExpiry;
+            document.getElementById('notifyEmail').checked = settings.notifyEmail;
+            document.getElementById('lowStockThreshold').value = settings.lowStockThreshold;
+            document.getElementById('expiryThreshold').value = settings.expiryThreshold;
+            document.getElementById('themeSelect').value = settings.theme;
+            document.getElementById('itemsPerPageSelect').value = String(settings.itemsPerPage);
+        }
+        
+        function saveSettings() {
+            const settings = {
+                notifyLowStock: document.getElementById('notifyLowStock').checked,
+                notifyExpiry: document.getElementById('notifyExpiry').checked,
+                notifyEmail: document.getElementById('notifyEmail').checked,
+                lowStockThreshold: parseInt(document.getElementById('lowStockThreshold').value),
+                expiryThreshold: parseInt(document.getElementById('expiryThreshold').value),
+                theme: document.getElementById('themeSelect').value,
+                itemsPerPage: parseInt(document.getElementById('itemsPerPageSelect').value)
+            };
+            
+            localStorage.setItem(KUNCI_PENGATURAN, JSON.stringify(settings));
+            
+            const toast = document.getElementById('successToast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        window.exportAllData = () => {
+            const stockData = JSON.parse(localStorage.getItem('GUDANG_STOK_DATA') || '[]');
+            const historyData = JSON.parse(localStorage.getItem('GUDANG_RIWAYAT_DATA') || '[]');
+            
+            const csvContent = '=== GUDANGKU EXPORT ===\n\n' +
+                'STOK DATA:\n' +
+                'Kode,Nama,Kategori,Jumlah,Unit,Tgl Kedaluwarsa\n' +
+                stockData.map(s => `${s.code},${s.name},${s.category},${s.quantity},${s.unit},${s.expiry}`).join('\n') +
+                '\n\nRIWAYAT:\n' +
+                'Aksi,Nama,Detail,Waktu\n' +
+                historyData.map(h => `${h.action},${h.itemName},${h.details},${h.timestamp}`).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gudangku_export.csv';
+            a.click();
+        };
+        
+        window.importData = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                alert('Import berhasil! Fitur lengkap akan segera tersedia.');
+                input.value = '';
+            };
+            reader.readAsText(file);
+        };
+        
+        window.clearAllStockData = () => {
+            if (confirm('Apakah Anda yakin ingin menghapus SEMUA data stok? Tindakan ini tidak dapat dibatalkan!')) {
+                if (confirm('Saya serius, hapus semua data?')) {
+                    localStorage.removeItem('GUDANG_STOK_DATA');
+                    alert('Data stok telah dihapus.');
+                }
+            }
+        };
+        
+        window.resetApp = () => {
+            if (confirm('PERINGATAN: Ini akan menghapus SEMUA data termasuk riwayat. Lanjutkan?')) {
+                if (confirm('Semua data akan hilang. Tetap lanjut?')) {
+                    localStorage.removeItem('GUDANG_STOK_DATA');
+                    localStorage.removeItem('GUDANG_RIWAYAT_DATA');
+                    localStorage.removeItem(KUNCI_PENGATURAN);
+                    alert('Aplikasi telah direset ke default.');
+                    location.reload();
+                }
+            }
+        };
+        
+        loadSettings();
+    </script>
+    <script src="../js/demo-tour.js"></script>
+</body>
+</html>

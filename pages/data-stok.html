@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Stok - GudangKu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .page-content { padding: 32px; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); }
+        
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-bar .search-box { width: 300px; }
+        
+        .filter-bar select {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-surface);
+            font-size: 0.875rem;
+            min-width: 180px;
+        }
+        
+        .stock-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .summary-card {
+            background: var(--bg-surface);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .summary-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .summary-card .info h4 { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 4px; }
+        .summary-card .info span { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        
+        .export-actions { display: flex; gap: 12px; }
+        
+        .btn-export {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .btn-export:hover { background-color: var(--bg-main); }
+
+        @media (max-width: 960px) {
+            .page-content { padding: 20px; }
+            .page-header { margin-bottom: 24px; }
+            .filter-bar .search-box { width: 100%; }
+            .export-actions { width: 100%; flex-wrap: wrap; }
+            .export-actions > * { flex: 1 1 180px; }
+        }
+
+        @media (max-width: 720px) {
+            .page-content { padding: 16px; }
+            .stock-summary { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar-backdrop" data-sidebar-backdrop></div>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="ph-fill ph-package"></i>
+                    <h2>GudangKu</h2>
+                </div>
+                <button class="sidebar-close-btn" type="button" data-sidebar-close aria-label="Tutup navigasi">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../index.html" class="nav-item">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="./data-stok.html" class="nav-item active">
+                    <i class="ph ph-archive-box"></i>
+                    <span>Data Stok</span>
+                </a>
+                <a href="./riwayat.html" class="nav-item">
+                    <i class="ph ph-clock-counter-clockwise"></i>
+                    <span>Riwayat</span>
+                </a>
+                <a href="./pengaturan.html" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <h1>Data Stok</h1>
+                    <p>Kelola dan lihat semua data persediaan</p>
+                </div>
+                <div class="header-right">
+                    <button class="mobile-menu-btn" type="button" data-sidebar-open aria-label="Buka navigasi">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar"><i class="ph ph-user"></i></div>
+                        <span class="user-name">Admin Gudang</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Inventory</h1>
+                    <p>Kelola semua data stok barang di gudang</p>
+                </div>
+
+                <div class="stock-summary" id="demo-stock-summary">
+                    <div class="summary-card">
+                        <div class="icon" style="background: var(--info-bg); color: var(--info);">
+                            <i class="ph ph-cube"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Total Items</h4>
+                            <span id="totalItems">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon" style="background: var(--success-bg); color: var(--success);">
+                            <i class="ph ph-check-circle"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Stok Aman</h4>
+                            <span id="safeStock">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon" style="background: var(--warning-bg); color: var(--warning);">
+                            <i class="ph ph-warning"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Stok Menipis</h4>
+                            <span id="lowStock">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon" style="background: var(--danger-bg); color: var(--danger);">
+                            <i class="ph ph-calendar-x"></i>
+                        </div>
+                        <div class="info">
+                            <h4>Kedaluwarsa</h4>
+                            <span id="expiringSoon">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-bar" id="demo-stock-filters">
+                    <div class="search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Cari barang...">
+                    </div>
+                    <select id="categoryFilter">
+                        <option value="">Semua Kategori</option>
+                        <option value="Bahan Pokok">Bahan Pokok</option>
+                        <option value="Sayur & Buah">Sayur & Buah</option>
+                        <option value="Daging & Ikan">Daging & Ikan</option>
+                        <option value="Bumbu Dapur">Bumbu Dapur</option>
+                        <option value="Minuman">Minuman</option>
+                        <option value="Kue & Roti">Kue & Roti</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                    <select id="statusFilter">
+                        <option value="">Semua Status</option>
+                        <option value="safe">Stok Aman</option>
+                        <option value="low">Stok Menipis</option>
+                        <option value="expiring">Kedaluwarsa</option>
+                    </select>
+                    <div class="export-actions">
+                        <button class="btn-export" onclick="exportData('csv')">
+                            <i class="ph ph-download-simple"></i> Export CSV
+                        </button>
+                        <button class="btn-export" onclick="exportData('pdf')">
+                            <i class="ph ph-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-section" id="demo-stock-table">
+                    <div class="table-header">
+                        <h2>Daftar Persediaan</h2>
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <i class="ph ph-plus"></i> Tambah Barang
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama Barang</th>
+                                    <th>Kategori</th>
+                                    <th>Jumlah</th>
+                                    <th>Satuan</th>
+                                    <th>Tgl Kedaluwarsa</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <i class="ph ph-package"></i>
+                        <p>Tidak ada data barang.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="formModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Tambah Barang Baru</h2>
+                <button class="icon-btn close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-group">
+                        <label for="itemCode">Kode Barang</label>
+                        <input type="text" id="itemCode" required placeholder="Contoh: BRG-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemName">Nama Barang</label>
+                        <input type="text" id="itemName" required placeholder="Masukkan nama makanan">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="itemCategory">Kategori</label>
+                            <select id="itemCategory" required>
+                                <option value="" disabled selected>Pilih Kategori</option>
+                                <option value="Bahan Pokok">Bahan Pokok</option>
+                                <option value="Sayur & Buah">Sayur & Buah</option>
+                                <option value="Daging & Ikan">Daging & Ikan</option>
+                                <option value="Bumbu Dapur">Bumbu Dapur</option>
+                                <option value="Minuman">Minuman</option>
+                                <option value="Kue & Roti">Kue & Roti</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="itemExpiry">Tgl Kedaluwarsa</label>
+                            <input type="date" id="itemExpiry" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="itemQuantity">Jumlah</label>
+                            <input type="number" id="itemQuantity" required min="0" placeholder="0">
+                        </div>
+                        <div class="form-group half">
+                            <label for="itemUnit">Satuan</label>
+                            <select id="itemUnit" required>
+                                <option value="" disabled selected>Pilih Satuan</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Gram">Gram</option>
+                                <option value="Liter">Liter</option>
+                                <option value="Pcs">Pcs</option>
+                                <option value="Karton">Karton</option>
+                                <option value="Lusin">Lusin</option>
+                                <option value="Pack">Pack</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary close-modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal small">
+            <div class="modal-header">
+                <h2>Konfirmasi Hapus</h2>
+                <button class="icon-btn close-delete"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="warning-icon text-red"><i class="ph ph-warning-circle"></i></div>
+                <p>Apakah Anda yakin ingin menghapus barang <strong><span id="deleteItemName"></span></strong>?</p>
+                <p class="text-muted">Data yang dihapus tidak dapat dikembalikan.</p>
+                <input type="hidden" id="deleteItemId">
+                <div class="form-actions center-actions mt-lg">
+                    <button type="button" class="btn btn-secondary close-delete">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Ya, Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/app-shell.js"></script>
+    <script>
+        const KUNCI_PENYIMPANAN = 'GUDANG_STOK_DATA';
+        const KUNCI_RIWAYAT = 'GUDANG_RIWAYAT_DATA';
+        
+        let daftarBarang = JSON.parse(localStorage.getItem(KUNCI_PENYIMPANAN)) || [];
+        
+        const tubuhTabel = document.getElementById('tableBody');
+        const statusKosong = document.getElementById('emptyState');
+        const inputPencarian = document.getElementById('searchInput');
+        const filterKategori = document.getElementById('categoryFilter');
+        const filterStatus = document.getElementById('statusFilter');
+        const kontainerTabel = document.querySelector('.table-container');
+        
+        const modalFormulir = document.getElementById('formModal');
+        const formulirBarang = document.getElementById('itemForm');
+        const modalHapus = document.getElementById('deleteModal');
+        
+        function simpanKeLocalStorage() {
+            localStorage.setItem(KUNCI_PENYIMPANAN, JSON.stringify(daftarBarang));
+        }
+        
+        function getStatus(jumlah, tanggalKadaluarsa) {
+            const hariIni = new Date();
+            const tanggalKedaluwarsa = new Date(tanggalKadaluarsa);
+            const hariMenujuKedaluwarsa = Math.ceil((tanggalKedaluwarsa.getTime() - hariIni.getTime()) / (1000 * 3600 * 24));
+            
+            if (hariMenujuKedaluwarsa <= 7) return { label: 'Kedaluwarsa', class: 'kedaluwarsa', type: 'expiring' };
+            else if (jumlah <= 10) return { label: 'Stok Menipis', class: 'menipis', type: 'low' };
+            else return { label: 'Aman', class: 'aman', type: 'safe' };
+        }
+        
+        function formatTanggal(stringTanggal) {
+            const opsi = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(stringTanggal).toLocaleDateString('id-ID', opsi);
+        }
+        
+        function updateStats() {
+            let aman = 0, menipis = 0, kedaluwarsa = 0;
+            daftarBarang.forEach(barang => {
+                const status = getStatus(barang.quantity, barang.expiry);
+                if (status.type === 'safe') aman++;
+                if (status.type === 'low') menipis++;
+                if (status.type === 'expiring') kedaluwarsa++;
+            });
+            document.getElementById('totalItems').innerText = daftarBarang.length;
+            document.getElementById('safeStock').innerText = aman;
+            document.getElementById('lowStock').innerText = menipis;
+            document.getElementById('expiringSoon').innerText = kedaluwarsa;
+        }
+        
+        function renderTable() {
+            const searchTerm = inputPencarian.value.toLowerCase();
+            const categoryFilter = filterKategori.value;
+            const statusFilter = filterStatus.value;
+            
+            const filtered = daftarBarang.filter(barang => {
+                const matchSearch = barang.name.toLowerCase().includes(searchTerm) || barang.code.toLowerCase().includes(searchTerm);
+                const matchCategory = !categoryFilter || barang.category === categoryFilter;
+                const status = getStatus(barang.quantity, barang.expiry);
+                const matchStatus = !statusFilter || status.type === statusFilter;
+                return matchSearch && matchCategory && matchStatus;
+            });
+            
+            tubuhTabel.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                kontainerTabel.style.display = 'none';
+                statusKosong.style.display = 'block';
+            } else {
+                kontainerTabel.style.display = 'block';
+                statusKosong.style.display = 'none';
+                
+                filtered.forEach(barang => {
+                    const status = getStatus(barang.quantity, barang.expiry);
+                    const baris = document.createElement('tr');
+                    baris.innerHTML = `
+                        <td data-label="Kode"><strong>${barang.code}</strong></td>
+                        <td data-label="Nama Barang">${barang.name}</td>
+                        <td data-label="Kategori">${barang.category}</td>
+                        <td data-label="Jumlah">${barang.quantity}</td>
+                        <td data-label="Satuan">${barang.unit}</td>
+                        <td data-label="Tgl Kedaluwarsa">${formatTanggal(barang.expiry)}</td>
+                        <td data-label="Status"><span class="badge ${status.class}">${status.label}</span></td>
+                        <td data-label="Aksi">
+                            <div class="action-cell">
+                                <button class="icon-btn edit" onclick="editBarang('${barang.id}')"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="icon-btn delete" onclick="bukaModalHapus('${barang.id}', '${barang.name}')"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tubuhTabel.appendChild(baris);
+                });
+            }
+            updateStats();
+        }
+        
+        window.editBarang = (id) => {
+            const barang = daftarBarang.find(b => b.id === id);
+            if (barang) {
+                document.getElementById('itemId').value = barang.id;
+                document.getElementById('itemCode').value = barang.code;
+                document.getElementById('itemName').value = barang.name;
+                document.getElementById('itemCategory').value = barang.category;
+                document.getElementById('itemQuantity').value = barang.quantity;
+                document.getElementById('itemUnit').value = barang.unit;
+                document.getElementById('itemExpiry').value = barang.expiry;
+                document.getElementById('modalTitle').innerText = 'Edit Barang';
+                modalFormulir.classList.add('active');
+            }
+        };
+        
+        window.bukaModalHapus = (id, nama) => {
+            document.getElementById('deleteItemId').value = id;
+            document.getElementById('deleteItemName').innerText = nama;
+            modalHapus.classList.add('active');
+        };
+        
+        window.openAddModal = () => {
+            document.getElementById('modalTitle').innerText = 'Tambah Barang Baru';
+            formulirBarang.reset();
+            document.getElementById('itemId').value = '';
+            modalFormulir.classList.add('active');
+        };
+        
+        function addToHistory(action, itemName, details) {
+            const riwayat = JSON.parse(localStorage.getItem(KUNCI_RIWAYAT)) || [];
+            const entry = {
+                id: Date.now().toString(),
+                action: action,
+                itemName: itemName,
+                details: details,
+                timestamp: new Date().toISOString()
+            };
+            riwayat.unshift(entry);
+            localStorage.setItem(KUNCI_RIWAYAT, JSON.stringify(riwayat));
+        }
+        
+        window.exportData = (type) => {
+            alert('Fitur export ' + type.toUpperCase() + ' akan segera tersedia!');
+        };
+        
+        inputPencarian.addEventListener('input', renderTable);
+        filterKategori.addEventListener('change', renderTable);
+        filterStatus.addEventListener('change', renderTable);
+        
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalFormulir.classList.remove('active');
+                formulirBarang.reset();
+                document.getElementById('itemId').value = '';
+            });
+        });
+        
+        document.querySelectorAll('.close-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalHapus.classList.remove('active');
+                document.getElementById('deleteItemId').value = '';
+            });
+        });
+        
+        formulirBarang.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('itemId').value;
+            const barangBaru = {
+                id: id || Math.floor(Math.random() * 1000000).toString(),
+                code: document.getElementById('itemCode').value,
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                quantity: parseInt(document.getElementById('itemQuantity').value),
+                unit: document.getElementById('itemUnit').value,
+                expiry: document.getElementById('itemExpiry').value
+            };
+            
+            if (id) {
+                const idx = daftarBarang.findIndex(b => b.id === id);
+                if (idx !== -1) {
+                    addToHistory('Edit', barangBaru.name, `Mengubah data barang: ${barangBaru.quantity} ${barangBaru.unit}`);
+                    daftarBarang[idx] = barangBaru;
+                }
+            } else {
+                addToHistory('Tambah', barangBaru.name, `Menambahkan barang baru: ${barangBaru.quantity} ${barangBaru.unit}`);
+                daftarBarang.push(barangBaru);
+            }
+            
+            simpanKeLocalStorage();
+            renderTable();
+            modalFormulir.classList.remove('active');
+            formulirBarang.reset();
+        });
+        
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            const id = document.getElementById('deleteItemId').value;
+            const barang = daftarBarang.find(b => b.id === id);
+            if (barang) {
+                addToHistory('Hapus', barang.name, `Menghapus barang: ${barang.quantity} ${barang.unit}`);
+            }
+            daftarBarang = daftarBarang.filter(b => b.id !== id);
+            simpanKeLocalStorage();
+            renderTable();
+            modalHapus.classList.remove('active');
+        });
+        
+        renderTable();
+    </script>
+    <script src="../js/demo-tour.js"></script>
+</body>
+</html>
